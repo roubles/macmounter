@@ -10,7 +10,7 @@ This is completely command line driven and is not moron friendly. Though, for g3
 
 ### Step 1 - Get code
 ```
-git clone 
+git clone https://github.com/roubles/macmounter.git
 ```
 
 ### Step 2 - Install script
