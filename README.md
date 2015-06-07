@@ -29,12 +29,15 @@ PING_CMD=/sbin/ping -q -c3 -o example.com
 MOUNT_TEST_CMD=/sbin/mount | grep -q "sshfs/somelocalfolder"
 PRE_MOUNT_CMD=/bin/mkdir -p /Users/roubles/somelocalfolder/
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/roubles/somelocalfolder/ -oauto_cache,reconnect,volname=auto
+MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles@github.com
 ```
 
-But, it can be simpler, you only need to specify MOUNT_CMD.
+But, it can be simpler. The simplest config only needs to specify MOUNT_CMD.
 ```
 [example.com]
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prmehta/somelocalfolder/ -oauto_cache,reconnect,volname=auto
 ```
+
+Detailed logs can be found here: ~/Library/Application Support/macmounter/macmounter.log
 
 More detailed documentation is coming.
