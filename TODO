@@ -1,0 +1,6 @@
+*1. Kill threads immediately.
+*2. PING_SUCCESS_CMD, PING_FAIL_CMD, MOUNT_FAIL_CMD, MOUNT_SUCCESS_CMD
+*3. Password management
+*4. startup scripting
+5. Support python 3 (yeah right...) 
+6. refactor executeCommand()
