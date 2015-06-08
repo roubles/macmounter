@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Author: Rouble Matta (@roubles)
 
 import os
 import sys
