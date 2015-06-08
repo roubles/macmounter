@@ -38,6 +38,18 @@ But, it can be simpler. The simplest config only needs to specify MOUNT_CMD.
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prmehta/somelocalfolder/ -oauto_cache,reconnect,volname=auto
 ```
 
+## Starting
+
+You may startup macmount using the commandline:
+```
+launchctl load -w ~/Library/LaunchAgents/com.irouble.macmounter.plist
+```
+
+or, logout and log back in (recommended).
+
+## Logs
+
 Detailed logs can be found here: ~/Library/Application Support/macmounter/macmounter.log
+
 
 More detailed documentation is coming.
