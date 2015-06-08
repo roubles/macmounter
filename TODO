@@ -12,3 +12,5 @@
 *12. Add state
 *13. Add retest interval when mounted, vs retest interval when not mounted
 14. Detect network changes to remount!
+15. Write uninstall script
+16. Add wiki on Github
