@@ -4,3 +4,11 @@
 *4. startup scripting
 5. Support python 3 (yeah right...) 
 6. refactor executeCommand()
+7. test with no files in configs
+*8. test with just mount_cmd specified
+*9. test with no mount test specified
+*10. test with no ping specified
+*11. LOST_MOUNT feature
+*12. Add state
+*13. Add retest interval when mounted, vs retest interval when not mounted
+14. Detect network changes to remount!

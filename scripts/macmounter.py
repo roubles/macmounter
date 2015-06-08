@@ -39,6 +39,7 @@ DEFAULT_WAKE_CMD = None
 DEFAULT_PRE_MOUNT_CMD = None
 DEFAULT_MOUNT_CMD = None
 DEFAULT_POST_MOUNT_CMD = None
+DEFAULT_LOST_MOUNT_CMD = None
 DEFAULT_MOUNT_SUCCESS_CMD = None
 DEFAULT_MOUNT_FAILURE_CMD = None
 homeConfigFolder = os.path.join(os.path.expanduser("~"), ".macmounter")
@@ -354,12 +355,39 @@ class mounter (threading.Thread):
          logger.info("Setting up thread for resource " + section)
          logger.info("Added thread to mounter map: " + section + filename + "=>" + str(self))
          mounterMap[section + filename] = self
+         self.states = ['INIT', 'PING_SUCCESS', 'PING_FAILURE', 'MOUNT_SUCCESS', 'MOUNT_FAILURE']
+         self.state = 'INIT'
          self.modifyTime = time.ctime(os.path.getmtime(filename))
          self.filename = filename
          self.section = section
          self.logprefix = "[" + self.section + "] "
          self.config = ConfigParser.ConfigParser()
          self.updateConfigs()
+
+     # Should be called *after* changing state
+     def updateCurrentInterval (self):
+         logger.info(self.logprefix + "Updating current interval in state [" + self.state + "]")
+         if self.state is 'PING_SUCCESS':
+             self.setCurrentInterval(self.intervalpingsuccess)
+         elif self.state is 'PING_FAILURE':
+             self.setCurrentInterval(self.intervalpingfailure)
+         elif self.state is 'MOUNT_SUCCESS':
+             self.setCurrentInterval(self.intervalmountsuccess)
+         elif self.state is 'MOUNT_FAILURE':
+             self.setCurrentInterval(self.intervalmountfailure)
+         else:
+             self.setCurrentInterval(self.interval)
+
+     def setCurrentInterval (self, currentinterval):
+         logger.info(self.logprefix + "Setting current interval to [" + str(currentinterval) + "]")
+         self.currentinterval = currentinterval
+
+     def changeState (self, toState):
+         if self.state not in self.states:
+             logger.error(self.logprefix + "Unknown state [" + toState + "]")
+             return
+         logger.info(self.logprefix + "Changing state from [" + self.state + "] to [" + toState + "]")
+         self.state = toState
 
      def updateConfigs (self):
          logger.info(self.logprefix + "Updating configs from file: " + self.filename + " and section: " + self.section)
@@ -370,10 +398,12 @@ class mounter (threading.Thread):
              self.stop()
              return
          self.interval = getConfig(self.config, self.section, 'RECHECK_INTERVAL_SECONDS', DEFAULT_RECHECK_INTERVAL_SECONDS, int, logPrefix=self.logprefix)
+         self.intervalpingsuccess = getConfig(self.config, self.section, 'RECHECK_INTERVAL_SECONDS_PING_SUCCESS', self.interval, int, logPrefix=self.logprefix)
+         self.intervalpingfailure = getConfig(self.config, self.section, 'RECHECK_INTERVAL_SECONDS_PING_FAILURE', self.interval, int, logPrefix=self.logprefix)
+         self.intervalmountsuccess = getConfig(self.config, self.section, 'RECHECK_INTERVAL_SECONDS_MOUNT_SUCCESS', self.interval, int, logPrefix=self.logprefix)
+         self.intervalmountfailure = getConfig(self.config, self.section, 'RECHECK_INTERVAL_SECONDS_MOUNT_FAILURE', self.interval, int, logPrefix=self.logprefix)
          self.mounttestcmd = getConfig(self.config, self.section, 'MOUNT_TEST_CMD', DEFAULT_MOUNT_TEST_CMD, logPrefix=self.logprefix)
          self.pingcmd = getConfig(self.config, self.section, 'PING_CMD', DEFAULT_PING_CMD, logPrefix=self.logprefix)
-         self.pingsuccesscmd = getConfig(self.config, self.section, 'PING_SUCCESS_CMD', DEFAULT_PING_SUCCESS_CMD, logPrefix=self.logprefix)
-         self.pingfailurecmd = getConfig(self.config, self.section, 'PING_FAILURE_CMD', DEFAULT_PING_FAILURE_CMD, logPrefix=self.logprefix)
          self.premountcmd = getConfig(self.config, self.section, 'PRE_MOUNT_CMD', DEFAULT_PRE_MOUNT_CMD, logPrefix=self.logprefix)
          self.wakecmd = getConfig(self.config, self.section, 'WAKE_CMD', DEFAULT_WAKE_CMD, logPrefix=self.logprefix)
          self.wakeattempts = getConfig(self.config, self.section, 'WAKE_ATTEMPTS', DEFAULT_WAKE_ATTEMPTS, int, logPrefix=self.logprefix)
@@ -381,13 +411,38 @@ class mounter (threading.Thread):
          self.mountsuccesscmd = getConfig(self.config, self.section, 'MOUNT_SUCCESS_CMD', DEFAULT_MOUNT_SUCCESS_CMD, logPrefix=self.logprefix)
          self.mountfailurecmd = getConfig(self.config, self.section, 'MOUNT_FAILURE_CMD', DEFAULT_MOUNT_FAILURE_CMD, logPrefix=self.logprefix)
          self.postmountcmd = getConfig(self.config, self.section, 'POST_MOUNT_CMD', DEFAULT_POST_MOUNT_CMD, logPrefix=self.logprefix)
+         self.lostmountcmd = getConfig(self.config, self.section, 'LOST_MOUNT_CMD', DEFAULT_LOST_MOUNT_CMD, logPrefix=self.logprefix)
 
      def stop (self):
          logger.info(self.logprefix + "Stopping thread: " + str(threading.current_thread()))
          self.running = False
 
+     # Should be called *before* changing state
+     def mountFailure (self, reason=""):
+         self.isMountLost()
+         if self.state is not 'MOUNT_FAILURE' and self.state is not 'PING_FAILURE':
+             logger.info(self.logprefix + "Mount command failed!")
+             if isNotBlank(self.mountfailurecmd):
+                 logger.info(self.logprefix + "Mount failure command specified. Running.")
+                 runCmd("export REASON=\"" + reason + "\"; " + self.mountfailurecmd, self.logprefix)
+
+     # Should be called *before* changing state
+     def mountSuccess (self):
+         if self.state is not 'MOUNT_SUCCESS':
+             logger.info(self.logprefix + "Mounting successful!")
+             if isNotBlank(self.mountsuccesscmd):
+                 logger.info(self.logprefix + "Mount success command specified. Running.")
+                 runCmd(self.mountsuccesscmd, self.logprefix)
+
+     # Should be called *before* changing state
+     def isMountLost (self):
+         if self.state is 'MOUNT_SUCCESS':
+             # We previously were mounted!
+             runCmd(self.lostmountcmd, self.logprefix)
+
      def run (self):
          seconds = 0
+         self.updateCurrentInterval()
          self.running = True
          while self.running:
              try:
@@ -396,11 +451,14 @@ class mounter (threading.Thread):
                      logger.info(self.logprefix + "Configs have changed!")
                      self.updateConfigs()
                      self.modifyTime = modifyTime
+                     self.configsmodified = True
+                 else:
+                     self.configsmodified = False
              except Exception as e:
                  logger.error(e)
                  logger.info("File " + self.filename + " is gone!")
                  break
-             if (seconds % self.interval == 0):
+             if (seconds % self.currentinterval == 0) or self.configsmodified:
                  try:
                      logger.info(self.logprefix + "Working on section [" + self.section + "] from file [" + self.filename + "]")
                      if isBlank(self.mountcmd):
@@ -417,13 +475,18 @@ class mounter (threading.Thread):
                                  # Resource is already mounted. Do nothing.
                                  logger.info(self.logprefix + "Resource is already mounted. Nothing to do.")
                                  mounted = True
+                                 self.mountSuccess()
+                                 self.changeState('MOUNT_SUCCESS')
+                             else:
+                                 mounted = False
+                                 self.isMountLost()
                          if not mounted:
                              # Resource is not mounted.
                              logger.info(self.logprefix + "Resource is NOT mounted. Lets get to work.")
                              pingSuccess = False
-                             if self.pingcmd:
+                             if isNotBlank(self.pingcmd):
                                  logger.info(self.logprefix + "Ping command specified.")
-                                 if self.wakecmd:
+                                 if isNotBlank(self.wakecmd):
                                      logger.info(self.logprefix + "Wake command specified.")
                                      wakeAttempts = self.wakeattempts
                                      while (True):
@@ -431,20 +494,26 @@ class mounter (threading.Thread):
                                          if not runCmd(self.pingcmd, self.logprefix):
                                              logger.info(self.logprefix + "Ping failed! Wake attempts left: " + str(wakeAttempts))
                                              if (wakeAttempts == 0):
+                                                 self.mountFailure("Ping failed.")
+                                                 self.changeState('PING_FAILURE')
                                                  break
                                              logger.info(self.logprefix + "Now try to wake the resource up.")
                                              runCmd(self.wakecmd, self.logprefix)
                                              wakeAttempts -= 1
                                          else:
                                              logger.info(self.logprefix + "Ping successful.")
+                                             self.changeState('PING_SUCCESS')
                                              pingSuccess = True
                                              break
                                  else:
                                      logger.info(self.logprefix + "PING! Houston do you copy?")
                                      if runCmd(self.pingcmd, self.logprefix):
                                          logger.info(self.logprefix + "Ping successful.")
+                                         self.changeState('PING_SUCCESS')
                                          pingSuccess = True
                                      else:
+                                         self.mountFailure("Ping failed.")
+                                         self.changeState('PING_FAILURE')
                                          logger.info(self.logprefix + "Resource is down. Will not attempt mount.")
                              else:
                                  # No ping command, we assume ping suceeds, and
@@ -453,40 +522,29 @@ class mounter (threading.Thread):
                                  pingSuccess = True
                              
                              if pingSuccess:
-                                 if isNotBlank(self.pingsuccesscmd):
-                                     logger.info(self.logprefix + "Ping success command specified. Running.")
-                                     runCmd(self.pingsuccesscmd, self.logprefix)
-
                                  if isNotBlank(self.premountcmd):
                                      logger.info(self.logprefix + "Pre mount command specified. Running.")
                                      if not runCmd(self.premountcmd, self.logprefix):
-                                         logger.info(self.logprefix + "Pre mount cmd failed!")
+                                         logger.info(self.logprefix + "Pre mount command failed!")
 
                                  logger.info(self.logprefix + "Mounting...")
                                  if not runCmd(self.mountcmd, self.logprefix):
-                                     logger.info(self.logprefix + "Mount cmd failed!")
-                                     if isNotBlank(self.mountfailurecmd):
-                                         logger.info(self.logprefix + "Mount failure command specified. Running.")
-                                         runCmd(self.mountfailurecmd, self.logprefix)
+                                     self.mountFailure("Mount failed.")
+                                     self.changeState('MOUNT_FAILURE')
                                  else:
-                                     logger.info(self.logprefix + "Mounting successful!")
-                                     if isNotBlank(self.mountsuccesscmd):
-                                         logger.info(self.logprefix + "Mount success command specified. Running.")
-                                         runCmd(self.mountsuccesscmd, self.logprefix)
+                                     self.mountSuccess()
+                                     self.changeState('MOUNT_SUCCESS')
 
                                  if isNotBlank(self.postmountcmd):
                                      logger.info(self.logprefix + "Post mount command specified. Running.")
                                      if not runCmd(self.postmountcmd, self.logprefix):
-                                         logger.info(self.logprefix + "Post Mount cmd failed!")
-                             else:
-                                 logger.info(self.logprefix + "Ping failed. Not mounting.")
-                                 if isNotBlank(self.pingfailurecmd):
-                                     logger.info(self.logprefix + "Ping failure command specified. Running.")
-                                     runCmd(self.pingfailurecmd, self.logprefix)
-                     logger.info(self.logprefix + "Next test after " + str(self.interval) + " seconds")
+                                         logger.info(self.logprefix + "Post Mount command failed!")
+                     self.updateCurrentInterval()
+                     logger.info(self.logprefix + "Next test after " + str(self.currentinterval) + " seconds")
                  except Exception as e:
                      logger.error("Caught exception! Logging and continuing...")
                      logger.error(e)
+                     logger.exception(e)
              time.sleep(float(1))
              seconds += 1
          logger.info(self.logprefix + "Hasta La Vista. Baby.")
