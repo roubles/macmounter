@@ -480,7 +480,6 @@ class mounter (threading.Thread):
                                  self.changeState('MOUNT_SUCCESS')
                              else:
                                  mounted = False
-                                 self.isMountLost()
                          if not mounted:
                              # Resource is not mounted.
                              logger.info(self.logprefix + "Resource is NOT mounted. Lets get to work.")
