@@ -13,7 +13,7 @@ This is completely command line driven and is **not** moron friendly. For g33ks,
 git clone https://github.com/roubles/macmounter.git
 ```
 
-### Step 2 - Install script
+### Step 2 - Install
 ```
 cd macmounter
 sudo ./install.sh
@@ -66,3 +66,9 @@ It is not recommended to store your password in cleartext in the config files. m
 ## Architecture/Wiki
 
 More detailed documentation can be found on the wiki here: https://github.com/roubles/macmounter/wiki
+
+## Uninstall
+```
+cd macmounter
+sudo ./uninstall.sh
+```
