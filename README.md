@@ -25,8 +25,8 @@ Add config files in the directory ~/.macmounter/
 A simple config file looks like:
 ```
 [example.com]
+MOUNT_TEST_CMD=cd /Users/roubles/somelocalfolder/ && /sbin/mount | grep -q "sshfs/somelocalfolder"
 PING_CMD=/sbin/ping -q -c3 -o example.com 
-MOUNT_TEST_CMD=/sbin/mount | grep -q "sshfs/somelocalfolder"
 PRE_MOUNT_CMD=/bin/mkdir -p /Users/roubles/somelocalfolder/
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/roubles/somelocalfolder/ -oauto_cache,reconnect,volname=auto
 MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles@github.com
