@@ -59,6 +59,10 @@ https://github.com/roubles/macmounter/wiki/basic-example
 
 https://github.com/roubles/macmounter/wiki/configure-polling-intervals
 
+## Password management
+
+It is not recommended to store your password in cleartext in the config files. macmounter provides simple shell scripts to use mac's keychain to store passwords. More information is here: https://github.com/roubles/macmounter/wiki/password-management
+
 ## Architecture/Wiki
 
 More detailed documentation can be found on the wiki here: https://github.com/roubles/macmounter/wiki
