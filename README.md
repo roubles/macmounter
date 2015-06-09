@@ -28,7 +28,7 @@ A simple config file looks like:
 MOUNT_TEST_CMD=cd /Users/roubles/somelocalfolder/ && /sbin/mount | grep -q "sshfs/somelocalfolder"
 PING_CMD=/sbin/ping -q -c3 -o example.com 
 PRE_MOUNT_CMD=/bin/mkdir -p /Users/roubles/somelocalfolder/
-MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/roubles/somelocalfolder/ -oauto_cache,reconnect,volname=auto
+MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/roubles/somelocalfolder/ -oauto_cache,reconnect,volname=example
 MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles@github.com
 ```
 
