@@ -40,7 +40,7 @@ MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prme
 
 ## Starting
 
-You may startup macmount using the commandline:
+The macmounter service will start when it is installed. But you can manually startup macmounter using the commandline:
 ```
 launchctl load -w ~/Library/LaunchAgents/com.irouble.macmounter.plist
 ```
@@ -51,5 +51,4 @@ or, logout and log back in (recommended).
 
 Detailed logs can be found here: ~/Library/Application Support/macmounter/macmounter.log
 
-
-More detailed documentation is coming.
+More detailed documentation can be found on the wiki here: https://github.com/roubles/macmounter/wiki
