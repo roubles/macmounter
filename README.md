@@ -4,7 +4,7 @@ A very light weight python daemon that **automatically mounts** remote servers, 
 
 It is written for a OS X, but should be portable to any system that runs python 2.7.X.
 
-This is completely command line driven and is **not** moron friendly. For g33ks, it is a two step install, and a one step per server. The logs are very verbose and should be indicate any issues.
+This is completely command line driven and is **not** moron friendly. For g33ks, it is a two step install, and a one step per server. The logs are very verbose and should indicate any issues.
 
 ## Install
 
