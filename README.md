@@ -1,6 +1,6 @@
 # macmounter
 
-A light weight python daemon that **automatically mounts** remote servers on login and **keeps them mounted**. macmounter can be used for *any* protocol, sshfs, samba, afp, ftp, ntfs, webdav etc. 
+A light weight python daemon that **automatically mounts** remote servers on login, and **keeps them mounted**. macmounter can be used for *any* protocol, sshfs, samba, afp, ftp, ntfs, webdav etc. 
 
 It is written for a OS X, but should be portable to any system that runs python 2.7.X.
 
