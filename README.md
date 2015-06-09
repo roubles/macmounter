@@ -51,4 +51,14 @@ or, logout and log back in (recommended).
 
 Detailed logs can be found here: ~/Library/Application Support/macmounter/macmounter.log
 
+## Basic example
+
+https://github.com/roubles/macmounter/wiki/basic-example
+
+## Full Blown example
+
+https://github.com/roubles/macmounter/wiki/configure-polling-intervals
+
+## Architecture/Wiki
+
 More detailed documentation can be found on the wiki here: https://github.com/roubles/macmounter/wiki
