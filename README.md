@@ -38,9 +38,11 @@ But, it can be simpler. The simplest config only needs to specify MOUNT_CMD.
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prmehta/somelocalfolder/ -oauto_cache,reconnect,volname=auto
 ```
 
-## Starting
+## Starting/Stopping
 
-The macmounter service will start when it is installed. But you can manually startup macmounter using the commandline:
+The macmounter service will start when it is installed. The macm mounter service starts everytime you login, and dies everytime you log off. 
+
+But you can manually startup macmounter using the commandline:
 ```
 launchctl load -w ~/Library/LaunchAgents/com.irouble.macmounter.plist
 ```
