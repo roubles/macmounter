@@ -32,7 +32,7 @@ MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/roub
 MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles@github.com
 ```
 
-But, it can be simpler. The simplest config only needs to specify MOUNT_CMD.
+But, it can be simpler. The simplest config only needs to specify MOUNT_CMD, though this may be inefficient.
 ```
 [example.com]
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prmehta/somelocalfolder/ -oauto_cache,reconnect,volname=auto
