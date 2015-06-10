@@ -2,7 +2,7 @@
 
 A light weight python daemon that **automatically mounts** remote servers on login, and **keeps them mounted**. macmounter can be used for *any* protocol, sshfs, samba, afp, ftp, ntfs, webdav etc. 
 
-It is written for a OS X, but should be portable to any system that runs python 2.7.X.
+It is written for a OS X, but, should be portable to any system that runs python 2.7.X.
 
 This is completely command line driven and is **not** moron friendly. For g33ks, it is a two step install, and a one step configuration per server. The logs are very verbose and should indicate any issues.
 
@@ -40,14 +40,16 @@ MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prme
 
 ## Starting/Stopping
 
-The macmounter service will start when it is installed. The macm mounter service starts everytime you login, and dies everytime you log off. 
+The macmounter service should start when it is installed. 
 
-But you can manually startup macmounter using the commandline:
+The macmounter service starts everytime you login, and dies everytime you log off. 
+
+You can manually startup macmounter using the commandline:
 ```
 launchctl load -w ~/Library/LaunchAgents/com.irouble.macmounter.plist
 ```
 
-or, logout and log back in (recommended).
+or, logout and log back in.
 
 ## Logs
 
