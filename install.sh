@@ -20,6 +20,11 @@ else
     chown $USER "$HOME/Library/Application Support/macmounter"
 fi
 
+if [ ! -d /usr/local/bin/ ]; then
+    echo "Creating /usr/local/bin ..."
+    mkdir -p /usr/local/bin/ 
+fi
+
 echo "Installing script..."
 cp ./scripts/macmounter.py /usr/local/bin
 if [ ! -f /usr/local/bin/macmounter.py ]; then
