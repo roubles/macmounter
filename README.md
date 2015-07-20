@@ -59,6 +59,18 @@ Detailed logs can be found here: ~/Library/Application Support/macmounter/macmou
 
 https://github.com/roubles/macmounter/wiki/basic-example
 
+## Testing mounts examples and options
+
+https://github.com/roubles/macmounter/wiki/testing-mounts
+
+## Waking up servers example
+
+https://github.com/roubles/macmounter/wiki/wakeup-server-before-mounting
+
+## Unmounting before mounting example
+
+https://github.com/roubles/macmounter/wiki/unmount-before-mount
+
 ## Full Blown example
 
 https://github.com/roubles/macmounter/wiki/configure-polling-intervals
