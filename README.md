@@ -45,7 +45,7 @@ But, it can be simpler. The simplest config only needs to specify MOUNT_CMD, tho
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prmehta/somelocalfolder/ -oauto_cache,reconnect,volname=auto
 
 [anotherexample.com]
-MOUNT_CMD=/sbin/mount -t smbfs "//roubles:whatmeworry@$anotherexample.com/foo" /Volumes/someotherfolder
+MOUNT_CMD=/sbin/mount -t smbfs //roubles:whatmeworry@anotherexample.com/someotherremotefolder /Volumes/someotherfolder
 ```
 
 ## Starting/Stopping
