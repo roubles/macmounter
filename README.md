@@ -2,7 +2,7 @@
 
 A light weight, scalable, python daemon that **automatically mounts** remote servers on login, and **keeps them mounted**. macmounter can be used for *any* protocol, sshfs, samba, afp, ftp, ntfs, webdav etc. 
 
-It is written for a OS X, but, should be portable to any system that runs python 2.7.X.
+In its current state it is written to run a service on OS X (10.9+) out of the box, but it, _should_ be portable to any system that runs python 2.7.X. I have no plans to port it anywhere else at this time.
 
 This is completely command line driven and is **not** moron friendly. For g33ks, it is a two step install, and a one step configuration per server. The logs are very verbose and should indicate any issues.
 
