@@ -4,7 +4,7 @@ A light weight, scalable, python daemon that **automatically mounts** remote ser
 
 In its current state it is written to run as a service on OS X (10.9+) out of the box, but it, _should_ be portable to any system that runs python 2.7.X. I have no plans to port it anywhere else at this time.
 
-This is completely command line driven and is **not** moron friendly. For g33ks, it is a two step install, and a one step configuration per server. The logs are very verbose and should indicate any issues.
+This tool is completely command line driven and is **not** moron friendly. For g33ks, it is a two step install, and a one step configuration per server. The logs are very verbose and should indicate any issues.
 
 ## Install
 
@@ -30,12 +30,22 @@ PING_CMD=/sbin/ping -q -c3 -o example.com
 PRE_MOUNT_CMD=/bin/mkdir -p /Users/roubles/somelocalfolder/
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/roubles/somelocalfolder/ -oauto_cache,reconnect,volname=example
 MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles@github.com
+
+[anotherexample.com]
+MOUNT_TEST_CMD=ls -l /Volumes/someotherfolder && /sbin/mount | grep -q someotherfolder
+PING_CMD=/sbin/ping -q -c3 -o anotherexample.com
+PRE_MOUNT_CMD=/sbin/umount -f /Volumes/someotherfolder; /bin/mkdir -p /Volumes/someotherfolder
+MOUNT_CMD=/sbin/mount -t smbfs "//roubles:whatmeworry@$anotherexample.com/foo" /Volumes/someotherfolder
+MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted anotherexample.com!" roubles@github.com
 ```
 
 But, it can be simpler. The simplest config only needs to specify MOUNT_CMD, though this may be inefficient.
 ```
 [example.com]
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/prmehta/somelocalfolder/ -oauto_cache,reconnect,volname=auto
+
+[anotherexample.com]
+MOUNT_CMD=/sbin/mount -t smbfs "//roubles:whatmeworry@$anotherexample.com/foo" /Volumes/someotherfolder
 ```
 
 ## Starting/Stopping
