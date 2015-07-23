@@ -57,36 +57,32 @@ Detailed logs can be found here: ~/Library/Application Support/macmounter/macmou
 
 ## Basic example
 
-https://github.com/roubles/macmounter/wiki/basic-example
+A basic configuration example that should get you started can be found [here](https://github.com/roubles/macmounter/wiki/basic-example).
 
-## Testing mounts examples and options
+## More examples
 
-https://github.com/roubles/macmounter/wiki/testing-mounts
+### Testing mounts before remounting
+It is prudent to test if the mount is active and functioning before blindly remounting. [These examples](https://github.com/roubles/macmounter/wiki/testing-mounts) show the various options for testing mounts.
 
-## Waking up servers example
+### Waking up servers before mounting
+Sometimes NAS boxes go to sleep when idle. [These examples](https://github.com/roubles/macmounter/wiki/wakeup-server-before-mounting) show the various options for waking up remote drives on the LAN. 
 
-https://github.com/roubles/macmounter/wiki/wakeup-server-before-mounting
+### Unmounting before mounting
+If your mount test fails, it is very likely that the mount is in a weird state. It is recommended that you force an unmount before trying to remount. [These examples](https://github.com/roubles/macmounter/wiki/unmount-before-mount) show the various options for unmounting before remounting.
 
-## Unmounting before mounting example
+### Custom retry timers
+macmounter by default uses a five minute timer to retry for every case. However, it is written to be very configurable, and you can fine tune the retry time for pretty much every state. [These examples](https://github.com/roubles/macmounter/wiki/configure-polling-intervals) show the various options for fine tuning the retry timers per state.
 
-https://github.com/roubles/macmounter/wiki/unmount-before-mount
-
-## Full Blown example
-
-https://github.com/roubles/macmounter/wiki/configure-polling-intervals
-
-## Sample configs
-
-A good list of sample configs can be found here: 
-https://github.com/roubles/macmounter/wiki/Sample-configs
+### Miscellaneous examples
+[This](https://github.com/roubles/macmounter/wiki/Example-Configs) is a full list of example configs.
 
 ## Password management
 
-It is not recommended to store your password in cleartext in the config files. macmounter provides simple shell scripts to use OSX's keychain to store passwords. More information is here: https://github.com/roubles/macmounter/wiki/password-management
+It is not recommended to store your password in cleartext in the config files. macmounter provides simple shell scripts to use OSX's keychain to store passwords. More information is [here](https://github.com/roubles/macmounter/wiki/password-management).
 
 ## Architecture/Wiki
 
-More detailed documentation can be found on the wiki here: https://github.com/roubles/macmounter/wiki
+More detailed documentation can be found on the wiki [here](https://github.com/roubles/macmounter/wiki).
 
 ## Uninstall
 ```
