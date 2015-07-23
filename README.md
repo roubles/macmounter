@@ -70,6 +70,9 @@ Sometimes NAS boxes go to sleep when idle. [These examples](https://github.com/r
 ### Unmounting before mounting
 If your mount test fails, it is very likely that the mount is in a weird state. It is recommended that you force an unmount before trying to remount. [These examples](https://github.com/roubles/macmounter/wiki/unmount-before-mount) show the various options for unmounting before remounting.
 
+### Success/Failure commands
+Sometimes it is desirable to run commands on success or failure. One good reason is to notify someone of the success or failure. [These examples](https://github.com/roubles/macmounter/wiki/status-notification-commands) show the various options of running commands on success or failure.
+
 ### Custom retry timers
 macmounter by default uses a five minute timer to retry for every case. However, it is written to be very configurable, and you can fine tune the retry time for pretty much every state. [These examples](https://github.com/roubles/macmounter/wiki/configure-polling-intervals) show the various options for fine tuning the retry timers per state.
 
