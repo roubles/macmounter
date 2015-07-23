@@ -35,7 +35,7 @@ MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles
 MOUNT_TEST_CMD=ls -l /Volumes/someotherfolder && /sbin/mount | grep -q someotherfolder
 PING_CMD=/sbin/ping -q -c3 -o anotherexample.com
 PRE_MOUNT_CMD=/sbin/umount -f /Volumes/someotherfolder; /bin/mkdir -p /Volumes/someotherfolder
-MOUNT_CMD=/sbin/mount -t smbfs "//roubles:whatmeworry@$anotherexample.com/foo" /Volumes/someotherfolder
+MOUNT_CMD=/sbin/mount -t smbfs "//roubles:whatmeworry@anotherexample.com/someotherremotefolder" /Volumes/someotherfolder
 MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted anotherexample.com!" roubles@github.com
 ```
 
