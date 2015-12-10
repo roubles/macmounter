@@ -41,6 +41,7 @@ DEFAULT_PRE_MOUNT_CMD = None
 DEFAULT_MOUNT_CMD = None
 DEFAULT_POST_MOUNT_CMD = None
 DEFAULT_LOST_MOUNT_CMD = None
+DEFAULT_FOUND_MOUNT_CMD = None
 DEFAULT_MOUNT_SUCCESS_CMD = None
 DEFAULT_MOUNT_FAILURE_CMD = None
 homeConfigFolder = os.path.join(os.path.expanduser("~"), ".macmounter")
@@ -363,6 +364,7 @@ class mounter (threading.Thread):
          self.section = section
          self.logprefix = "[" + self.section + "] "
          self.config = ConfigParser.ConfigParser()
+         self.mounted = False
          self.updateConfigs()
 
      # Should be called *after* changing state
@@ -413,33 +415,33 @@ class mounter (threading.Thread):
          self.mountfailurecmd = getConfig(self.config, self.section, 'MOUNT_FAILURE_CMD', DEFAULT_MOUNT_FAILURE_CMD, logPrefix=self.logprefix)
          self.postmountcmd = getConfig(self.config, self.section, 'POST_MOUNT_CMD', DEFAULT_POST_MOUNT_CMD, logPrefix=self.logprefix)
          self.lostmountcmd = getConfig(self.config, self.section, 'LOST_MOUNT_CMD', DEFAULT_LOST_MOUNT_CMD, logPrefix=self.logprefix)
+         self.foundmountcmd = getConfig(self.config, self.section, 'FOUND_MOUNT_CMD', DEFAULT_FOUND_MOUNT_CMD, logPrefix=self.logprefix)
 
      def stop (self):
          logger.info(self.logprefix + "Stopping thread: " + str(threading.current_thread()))
          self.running = False
 
-     # Should be called *before* changing state
      def mountFailure (self, reason=""):
-         self.isMountLost()
-         if self.state is not 'MOUNT_FAILURE' and self.state is not 'PING_FAILURE':
-             logger.info(self.logprefix + "Mount command failed!")
-             if isNotBlank(self.mountfailurecmd):
-                 logger.info(self.logprefix + "Mount failure command specified. Running.")
-                 runCmd("export REASON=\"" + reason + "\"; " + self.mountfailurecmd, self.logprefix)
+         logger.info(self.logprefix + "Mount failure!")
+         if isNotBlank(self.mountfailurecmd):
+             logger.info(self.logprefix + "Mount failure command specified. Running.")
+             runCmd("export REASON=\"" + reason + "\"; " + self.mountfailurecmd, self.logprefix)
+         if self.mounted:
+             if isNotBlank(self.lostmountcmd):
+                 logger.info(self.logprefix + "Lost mount command specified. Running.")
+                 runCmd("export REASON=\"" + reason + "\"; " + self.lostmountcmd, self.logprefix)
+         self.mounted = False
 
-     # Should be called *before* changing state
      def mountSuccess (self):
-         if self.state is not 'MOUNT_SUCCESS':
-             logger.info(self.logprefix + "Mounting successful!")
-             if isNotBlank(self.mountsuccesscmd):
-                 logger.info(self.logprefix + "Mount success command specified. Running.")
-                 runCmd(self.mountsuccesscmd, self.logprefix)
-
-     # Should be called *before* changing state
-     def isMountLost (self):
-         if self.state is 'MOUNT_SUCCESS':
-             # We previously were mounted!
-             runCmd(self.lostmountcmd, self.logprefix)
+         logger.info(self.logprefix + "Mount success!")
+         if isNotBlank(self.mountsuccesscmd):
+             logger.info(self.logprefix + "Mount success command specified. Running.")
+             runCmd(self.mountsuccesscmd, self.logprefix)
+         if not self.mounted:
+             if isNotBlank(self.foundmountcmd):
+                 logger.info(self.logprefix + "Found mount command specified. Running.")
+                 runCmd(self.foundmountcmd, self.logprefix)
+         self.mounted = True
 
      def run (self):
          seconds = 0
@@ -466,7 +468,6 @@ class mounter (threading.Thread):
                          #First make sure we have a mount command.
                          logger.info(self.logprefix + "No mount command specified. Nothing to do for")
                      else:
-                         mounted = False
                          if isBlank(self.mounttestcmd):
                              logger.info(self.logprefix + "No mount test command specified. Can't test mount. Assume not mounted.")
                              # Assume not mounted!
@@ -475,12 +476,13 @@ class mounter (threading.Thread):
                              if runCmd(self.mounttestcmd, self.logprefix):
                                  # Resource is already mounted. Do nothing.
                                  logger.info(self.logprefix + "Resource is already mounted. Nothing to do.")
-                                 mounted = True
                                  self.mountSuccess()
                                  self.changeState('MOUNT_SUCCESS')
                              else:
-                                 mounted = False
-                         if not mounted:
+                                 logger.info(self.logprefix + "Resource is no longer mounted.")
+                                 self.mountFailure()
+                                 self.changeState('MOUNT_FAILURE')
+                         if not self.mounted:
                              # Resource is not mounted.
                              logger.info(self.logprefix + "Resource is NOT mounted. Lets get to work.")
                              pingSuccess = False
