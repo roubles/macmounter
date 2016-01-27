@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-USER=`logname`
+USER=$(whoami)
 
 echo "Creating $HOME/.macmounter"
 mkdir -p "$HOME/.macmounter"
