@@ -74,6 +74,12 @@ Detailed logs can be found here: ~/Library/Application Support/macmounter/macmou
 
 Tail ~/Library/Application Support/macmounter/macmounter.log, it is very informative.
 
+I find these bash aliases handy:
+```
+alias tailmmlogs='tail -f ~/Library/Application\ Support/macmounter/macmounter.log'
+alias vimmlogs='vi ~/Library/Application\ Support/macmounter/macmounter.log'
+```
+
 ## Basic example
 
 A basic configuration example that should get you started can be found [here](https://github.com/roubles/macmounter/wiki/basic-example).
