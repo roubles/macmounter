@@ -69,6 +69,7 @@ def setupParser ():
     parser.add_argument("-v", "--loglevel", help="Set log level", choices=loglevel, default='info')
     parser.add_argument("-m", "--macdefaults", help="Use mac defaults for logs", action="store_true", default=False)
     parser.add_argument("-o", "--nostdout", help="Do not display logs to stdout", action="store_true", default=False)
+    parser.add_argument("-r", "--reload", help="Reload currently running daemon (or mount all configured mounts now!)", action="store_true", default=False)
     return parser
 
 def setupLogger (logger, loglevel, logfile, stdout = False, rollover = False, rotate = False, backupCount = 3, maxBytes = 2097152):
@@ -113,14 +114,18 @@ def setupLogger (logger, loglevel, logfile, stdout = False, rollover = False, ro
 
     return logger
 
-def getConfFilesFromFolder (foldername):
+def getConfFilesFromFolder (foldername, newerThanTime=0):
     logger.info("Looking for config files in: " + foldername)
     configFiles = []
 
     if (os.path.isdir(foldername)):
-        for filename in os.listdir(foldername):
-            if filename.endswith(".conf"):
-                configFiles.append(os.path.join(foldername, filename))
+        for dirname,subdirs,files in os.walk(foldername):
+            for fname in files:
+                if fname.endswith(".conf"):
+                    full_path = os.path.join(dirname, fname)
+                    mtime = os.path.getmtime(full_path)
+                    if mtime > newerThanTime:
+                        configFiles.append(full_path)
 
     return configFiles
 
@@ -149,25 +154,44 @@ def get_absolute_path (path):
 
 def getConfFileMTime ():
     if os.path.isfile(conffile):
-        return time.ctime(os.path.getmtime(conffile))
+        return getFileMTime(conffile)
     else:
         return None
 
+def getFileMTime (filename):
+    return os.path.getmtime(filename)
+
+def getDirMTime (directory):
+    max_mtime = 0
+    dirmtime = os.path.getmtime(directory)
+    for dirname,subdirs,files in os.walk(directory):
+        for fname in files:
+            full_path = os.path.join(dirname, fname)
+            mtime = os.path.getmtime(full_path)
+            if mtime > max_mtime:
+                max_mtime = mtime
+                max_dir = dirname
+                max_file = fname
+    if (dirmtime > max_mtime):
+        return dirmtime
+    else:
+        return max_mtime
+
 def getConfDirMTime ():
     if os.path.isdir(confdir):
-        return time.ctime(os.path.getmtime(confdir))
+        return getDirMTime(confdir)
     else:
         return None
 
 def getDotMacMounterFileConfMtime ():
     if os.path.isfile(homeConfigFile): 
-        return time.ctime(os.path.getmtime(homeConfigFile))
+        return getFileMTime(homeConfigFile)
     else:
         return None
 
 def getDotMacMounterDirConfMtime ():
     if os.path.isdir(homeConfigFolder): 
-        return time.ctime(os.path.getmtime(homeConfigFolder)) 
+        return getDirMTime(homeConfigFolder)
     else:
         return None
 
@@ -183,18 +207,26 @@ def updateConfig ():
             logger.info("Got conf file: " + conffile)
             configFiles.append(conffile)
             confFileMtime = getConfFileMTime()
+            logger.info("Config file modification time: " + time.ctime(confFileMtime))
         if confdir:
             logger.info("Got conf dir: " + confdir)
             configFiles.extend(getConfFilesFromFolder(confdir))
             confDirMtime = getConfDirMTime()
+            logger.info("Config directory modification time: " + time.ctime(confDirMtime))
     else:
-        if os.path.isdir(homeConfigFolder):
-            configFiles.extend(getConfFilesFromFolder(homeConfigFolder))
-            dotMacMounterDirConfMtime = getDotMacMounterDirConfMtime()
-
         if os.path.isfile(homeConfigFile): 
+            logger.info("Looking for configs in " + homeConfigFile)
             configFiles.append(homeConfigFile)
             dotMacMounterFileConfMtime = getDotMacMounterFileConfMtime()
+            logger.info("~/.macmounter.conf modification time: " + time.ctime(dotMacMounterFileConfMtime))
+
+        if os.path.isdir(homeConfigFolder):
+            logger.info("Looking for configs in " + homeConfigFolder)
+            configFiles.extend(getConfFilesFromFolder(homeConfigFolder))
+            dotMacMounterDirConfMtime = getDotMacMounterDirConfMtime()
+            logger.info("~/.macmounter/ modification time: " + time.ctime(dotMacMounterDirConfMtime))
+
+
     return configFiles
 
 def killMounters ():
@@ -213,31 +245,43 @@ def monitorConfigs ():
         if conffile or confdir:
             if conffile:
                 newConfFileMtime = getConfFileMTime()
-                if confFileMtime != newConfFileMtime:
+                if newConfFileMtime > confFileMtime:
+                    logger.info("config file changed!")
+                    logger.info("new time: " + time.ctime(newConfFileMtime))
+                    logger.info("old time: " + time.ctime(confFileMtime))
                     configFiles.append(conffile)
                     confFileMtime = newConfFileMtime
             if confdir:
                 newConfDirMtime = getConfDirMTime()
-                #logger.info("new time: " + newConfDirMtime)
-                #logger.info("old time: " + confDirMtime)
-                if confDirMtime != newConfDirMtime:
-                    configFiles.extend(getConfFilesFromFolder(confdir))
+                if newConfDirMtime > confDirMtime:
+                    logger.info("config directory changed!")
+                    logger.info("new time: " + time.ctime(newConfDirMtime))
+                    logger.info("old time: " + time.ctime(confDirMtime))
+                    configFiles.extend(getConfFilesFromFolder(confdir, confDirMtime))
                     confDirMtime = newConfDirMtime
         else:
-            if os.path.isdir(homeConfigFolder):
-                newDotMacMounterDirConfMtime = getDotMacMounterDirConfMtime()
-                if dotMacMounterDirConfMtime != newDotMacMounterDirConfMtime:
-                    configFiles.extend(getConfFilesFromFolder(homeConfigFolder))
-                    dotMacMounterDirConfMtime = newDotMacMounterDirConfMtime
             if os.path.isfile(homeConfigFile): 
                 newDotMacMounterFileConfMtime = getDotMacMounterFileConfMtime()
-                if dotMacMounterFileConfMtime != newDotMacMounterFileConfMtime:
+                if newDotMacMounterFileConfMtime > dotMacMounterFileConfMtime:
+                    logger.info("~/.macmounter.conf file changed!")
+                    logger.info("new time: " + time.ctime(newDotMacMounterFileConfMtime))
+                    logger.info("old time: " + time.ctime(dotMacMounterFileConfMtime))
                     configFiles.append(homeConfigFile)
                     dotMacMounterFileConfMtime = newDotMacMounterFileConfMtime
+            if os.path.isdir(homeConfigFolder):
+                newDotMacMounterDirConfMtime = getDotMacMounterDirConfMtime()
+                if newDotMacMounterDirConfMtime > dotMacMounterDirConfMtime:
+                    logger.info("~/.macmounter directory changed!")
+                    logger.info("new time: " + time.ctime(newDotMacMounterDirConfMtime))
+                    logger.info("old time: " + time.ctime(dotMacMounterDirConfMtime))
+                    configFiles.extend(getConfFilesFromFolder(homeConfigFolder, dotMacMounterDirConfMtime))
+                    dotMacMounterDirConfMtime = newDotMacMounterDirConfMtime
         if configFiles:
             logger.info("Configs have changed!")
             launchMounters(configFiles)
+        #logger.info("Sleeping...")
         time.sleep(float(1))
+        #logger.info("Done sleeping...")
     logger.info("Tango down. Config monitor thread dead.")
 
 def waitOnMounters ():
@@ -258,15 +302,11 @@ def launchMounters (configFiles):
 def getConfig(config, section, option, default=None, ctype=str, logPrefix=""):
     ret = None
     try:
-        if default is None:
-            ret = config.get(section, option)
-        else:
-            confdict = config.__dict__.get('_sections')
-            ret = confdict.get(section).get(option.lower(), default)
-        if isBlank(ret):
-            ret = default
+        ret = config.get(section, option)
     except:
         pass
+    if isBlank(ret):
+        ret = default
     logger.info(logPrefix + "For config: " + option + "=>" + str(ret))
     if ret:
         return ctype(ret)
@@ -297,14 +337,22 @@ def crux ():
 
     args.logfile = get_absolute_path(args.logfile)
     setupLogger (logger, args.loglevel, args.logfile, not args.nostdout, False, True, 10)
-    logger.info("===> Starting macmounter on " + time.strftime("%Y-%m-%dT%H.%M.%S") + "<===")
+    logger.info("===> Starting macmounter on " + time.strftime("%Y-%m-%dT%H.%M.%S") + "with pid " + str(os.getpid()) + "<===")
+
+    if args.reload:
+        # BSD Specific?
+        cmd = "launchctl list | grep com.irouble.macmounter | cut -f1"
+        pid = executeCommand(cmd, "", True)
+        if isNotBlank(pid):
+            logger.info("Restarting PID="+pid)
+            os.kill(int(pid), signal.SIGHUP)
+        return
 
     launchMounters(updateConfig())
     monitorConfigs()
     waitOnMounters()
 
-
-def executeCommand(cmd, logPrefix=""):
+def executeCommand(cmd, logPrefix="", returnstdout=False):
     rc = None
     #args = shlex.split(cmd) 
     args = cmd
@@ -329,7 +377,10 @@ def executeCommand(cmd, logPrefix=""):
     finally:
         #print "here5 RC"
         logger.info(logPrefix + "RC=" + str(rc))
-        return rc
+        if returnstdout:
+            return streamdata
+        else:
+            return rc
 
 def isBlank (myString):
     if myString and myString.strip():
@@ -359,7 +410,7 @@ class mounter (threading.Thread):
          mounterMap[section + filename] = self
          self.states = ['INIT', 'PING_SUCCESS', 'PING_FAILURE', 'MOUNT_SUCCESS', 'MOUNT_FAILURE']
          self.state = 'INIT'
-         self.modifyTime = time.ctime(os.path.getmtime(filename))
+         self.modifyTime = os.path.getmtime(filename)
          self.filename = filename
          self.section = section
          self.logprefix = "[" + self.section + "] "
@@ -449,9 +500,11 @@ class mounter (threading.Thread):
          self.running = True
          while self.running:
              try:
-                 modifyTime = time.ctime(os.path.getmtime(self.filename))
-                 if modifyTime != self.modifyTime:
+                 modifyTime = os.path.getmtime(self.filename)
+                 if modifyTime > self.modifyTime:
                      logger.info(self.logprefix + "Configs have changed!")
+                     logger.info(self.logprefix + "new config time: " + time.ctime(modifyTime))
+                     logger.info(self.logprefix + "old config time: " + time.ctime(self.modifyTime))
                      self.updateConfigs()
                      self.modifyTime = modifyTime
                      self.configsmodified = True
