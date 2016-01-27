@@ -25,6 +25,8 @@ def ctrlc_handler (signal, frame):
 def hup_handler (signal, frame):
     logger.info('Caught signal HUP. macmounter restarted!')
     launchMounters(updateConfig())
+    for mounter in mounterMap.values():
+        mounter.reload = True # This triggers the mounter to restart
 
 # Global variables are evil. Except these.
 logger = logging.getLogger("macmounter")
@@ -416,6 +418,7 @@ class mounter (threading.Thread):
          self.logprefix = "[" + self.section + "] "
          self.config = ConfigParser.ConfigParser()
          self.mounted = False
+         self.reload = False
          self.updateConfigs()
 
      # Should be called *after* changing state
@@ -514,8 +517,9 @@ class mounter (threading.Thread):
                  logger.error(e)
                  logger.info("File " + self.filename + " is gone!")
                  break
-             if (seconds % self.currentinterval == 0) or self.configsmodified:
+             if (seconds % self.currentinterval == 0) or self.configsmodified or self.reload:
                  try:
+                     self.reload = False
                      logger.info(self.logprefix + "Working on section [" + self.section + "] from file [" + self.filename + "]")
                      if isBlank(self.mountcmd):
                          #First make sure we have a mount command.
