@@ -58,12 +58,21 @@ You can manually startup macmounter using the commandline:
 ```
 launchctl load -w ~/Library/LaunchAgents/com.irouble.macmounter.plist
 ```
-
 or, logout and log back in.
+
+## Quick reload configs
+There may be instances where you don't want to wait for macmounters timers to kick in to perform mounts. For this,you can force it to re-attempt all mounts instantly by running:
+```
+$ macmounter.py --reload
+```
 
 ## Logs
 
 Detailed logs can be found here: ~/Library/Application Support/macmounter/macmounter.log
+
+## Troubleshooting
+
+Tail ~/Library/Application Support/macmounter/macmounter.log, it is very informative.
 
 ## Basic example
 
@@ -73,6 +82,9 @@ A basic configuration example that should get you started can be found [here](ht
 
 ### Testing mounts before remounting
 It is prudent to test if the mount is active and functioning before blindly remounting. [These examples](https://github.com/roubles/macmounter/wiki/testing-mounts) show the various options for testing mounts.
+
+### Multiple mounts from the same server
+This is pretty straight forward, just add a section for each mount. [These examples] (https://github.com/roubles/macmounter/wiki/Mounting-multiple-folders-from-the-same-server) show examples.
 
 ### Waking up servers before mounting
 Sometimes NAS boxes go to sleep when idle. [These examples](https://github.com/roubles/macmounter/wiki/wakeup-server-before-mounting) show the various options for waking up remote drives on the LAN. 
