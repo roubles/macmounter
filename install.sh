@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 USER=$(whoami)
+HOME=$(eval echo "~$USER")
 
 echo "Creating $HOME/.macmounter"
 mkdir -p "$HOME/.macmounter"
