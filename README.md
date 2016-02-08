@@ -24,19 +24,20 @@ Add config files in the directory ~/.macmounter/
 
 A simple config file looks like:
 ```
+$ cat example.conf
 [example.com]
 MOUNT_TEST_CMD=ls -l /Users/roubles/somelocalfolder/
 PING_CMD=/sbin/ping -q -c3 -o example.com 
 PRE_MOUNT_CMD=/bin/mkdir -p /Users/roubles/somelocalfolder/
 MOUNT_CMD=/usr/local/bin/sshfs roubles@example.com:/someremotefolder /Users/roubles/somelocalfolder/ -oauto_cache,reconnect,volname=example
-MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles@github.com
+FOUND_MOUNT_CMD=/bin/echo "" | /usr/bin/mail -s "mounted example.com!" roubles@github.com
 
 [anotherexample.com]
 MOUNT_TEST_CMD=ls -l /Volumes/someotherfolder && /sbin/mount | grep -q someotherfolder
 PING_CMD=/sbin/ping -q -c3 -o anotherexample.com
 PRE_MOUNT_CMD=/sbin/umount -f /Volumes/someotherfolder; /bin/mkdir -p /Volumes/someotherfolder
 MOUNT_CMD=/sbin/mount -t smbfs "//roubles:whatmeworry@anotherexample.com/someotherremotefolder" /Volumes/someotherfolder
-MOUNT_SUCCESS_CMD=/bin/echo "" | /usr/bin/mail -s "mounted anotherexample.com!" roubles@github.com
+FOUND_MOUNT_CMD=/bin/echo "" | /usr/bin/mail -s "mounted anotherexample.com!" roubles@github.com
 ```
 
 But, it can be simpler. The simplest config only needs to specify MOUNT_CMD, though this may be inefficient.
