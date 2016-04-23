@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-USER=$(whoami)
+USER=$(logname)
 HOME=$(eval echo "~$USER")
+echo "USER=$USER" 
+echo "HOME=$HOME" 
 
 echo "Creating $HOME/.macmounter"
 mkdir -p "$HOME/.macmounter"
@@ -32,7 +34,7 @@ if [ ! -f /usr/local/bin/macmounter.py ]; then
     echo "Error installing script."
 fi
 
-echo "Installing launcher $HOME/Library/LaunchAgents"
+echo "Installing launcher in $HOME/Library/LaunchAgents"
 cp ./launch/com.irouble.macmounter.plist "$HOME/Library/LaunchAgents"
 if [ ! -f "$HOME/Library/LaunchAgents/com.irouble.macmounter.plist" ]; then
     echo "Error installing launcher."
