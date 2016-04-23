@@ -39,8 +39,11 @@ cp ./launch/com.irouble.macmounter.plist "$HOME/Library/LaunchAgents"
 if [ ! -f "$HOME/Library/LaunchAgents/com.irouble.macmounter.plist" ]; then
     echo "Error installing launcher."
 else
-    echo "Stopping service"
-    sudo -u $USER launchctl unload "$HOME/Library/LaunchAgents/com.irouble.macmounter.plist"
+    sudo -u $USER launchctl list | grep macmounter
+    if [ $? -eq 0 ]; then
+        echo "Stopping service"
+        sudo -u $USER launchctl unload "$HOME/Library/LaunchAgents/com.irouble.macmounter.plist"
+    fi
     sleep 2
     echo "Starting service"
     sudo -u $USER launchctl load -w "$HOME/Library/LaunchAgents/com.irouble.macmounter.plist"
