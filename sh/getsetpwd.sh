@@ -12,5 +12,5 @@ then
     echo -n Password:  
     read -s password
 
-    security add-generic-password -a ${account} -s ${service} -w ${password}
+    security add-generic-password -a "${account}" -s "${service}" -w "${password}"
 fi
